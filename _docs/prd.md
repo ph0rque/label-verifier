@@ -43,15 +43,15 @@
 ## 5. Functional Requirements
 
 ### 5.1 Form Data Capture
-- Required fields (sourced from distilled spirits spec and assignment brief):
-  - `brandName`
-  - `productClassType`
-  - `alcoholContent` (percentage)
-  - `netContents` (e.g., 750 mL) — expected by spec; include in MVP
-- Optional (MVP Bonus-ready but not required for Friday)
-  - `bottlerNameAddress`
+- **Required fields** (sourced from distilled spirits spec and assignment brief):
+  - `brandName` (text)
+  - `productClassType` (text, e.g., "Kentucky Straight Bourbon Whiskey", "Vodka")
+  - `alcoholContent` (percentage, e.g., "45%")
+  - `netContents` (volume with unit, e.g., "750 mL", "12 fl oz")
+- **Optional fields** (bonus features, not required for MVP):
+  - `bottlerNameAddress` (text)
   - `governmentWarningAcknowledged` (checkbox confirming expectation)
-- Input validation: non-empty text for required strings, format check for alcohol content (`\d+(\.\d+)?%`) and net contents (`\d+\s?(mL|L|fl\s?oz|oz)`); client- and server-side enforcement.
+- **Input validation**: Non-empty text for all required fields; format check for alcohol content (`\d+(\.\d+)?%?`) and net contents (`\d+\s?(mL|L|fl\s?oz|oz)`); enforce client-side and server-side.
 
 ### 5.2 Image Upload Handling
 - Accept JPEG/PNG up to 10 MB.
@@ -61,33 +61,38 @@
 ### 5.3 OCR & Data Extraction
 - Utilize TypeScript-compatible OCR (e.g., Tesseract.js in serverless function) with English language pack.
 - Normalize OCR output: uppercase transformation, collapse whitespace, strip punctuation except `%` and unit tokens.
-- Extract candidate values:
+- Extract candidate values from label text:
   - Brand & class/type: string contains check (case-insensitive).
   - Alcohol content: regex detect `[0-9]+(\.[0-9]+)?%`.
   - Net contents: regex detect `[0-9]+\s?(ML|L|FL\.?\s?OZ|OZ)`.
-  - Government warning phrase detection: search for `GOVERNMENT WARNING` (flag as informational if missing).
+  - **Government warning phrase**: search for `GOVERNMENT WARNING` in OCR output (MVP baseline feature; flag as informational if missing).
 
 ### 5.4 Comparison Logic
-- Case-insensitive comparison with trimmed whitespace.
-- Alcohol content match: numeric equality within tolerance of ±0.1% to account for OCR rounding.
-- Net contents match: exact match ignoring capitalization and optional punctuation.
-- Government warning: boolean presence indicator (not blocking MVP pass/fail but reported).
+- **Comprehensive evaluation**: Comparison logic MUST evaluate ALL required fields and collect ALL discrepancies before returning results; do not short-circuit on first mismatch.
+- **Field matching rules**:
+  - Brand name & product class/type: case-insensitive substring match with trimmed whitespace.
+  - Alcohol content: numeric equality within tolerance of ±0.1% to account for OCR rounding.
+  - Net contents: exact match ignoring capitalization and optional punctuation in units.
+  - Government warning: boolean presence indicator (included in MVP, reported but does not block overall pass/fail verdict).
 - Produce per-field verdict along with detected OCR snippet when available.
 
 ### 5.5 Results Reporting
-- Overall verdict computed as `Match` if all required fields matched; `Mismatch` if any required field mismatched; `Unreadable` if OCR extraction failed entirely.
-- Include structured payload returned to frontend:
+- **Overall verdict** computed as `Match` if all required fields matched; `Mismatch` if any required field mismatched; `Unreadable` if OCR extraction failed entirely.
+- **Structured response payload** returned to frontend:
   ```json
   {
     "overallStatus": "match|mismatch|unreadable",
     "checks": [
       { "field": "brandName", "status": "matched|mismatch|not_found", "formValue": "string", "detectedValue": "string|null" },
-      ...
+      { "field": "productClassType", "status": "matched|mismatch|not_found", "formValue": "string", "detectedValue": "string|null" },
+      { "field": "alcoholContent", "status": "matched|mismatch|not_found", "formValue": "string", "detectedValue": "string|null" },
+      { "field": "netContents", "status": "matched|mismatch|not_found", "formValue": "string", "detectedValue": "string|null" },
+      { "field": "governmentWarning", "status": "present|missing", "formValue": null, "detectedValue": "boolean" }
     ],
     "notes": ["string"]
   }
   ```
-- Frontend renders results using accessible list with color-coded badges.
+- **Complete checklist display**: Frontend renders results using accessible list with color-coded badges showing ALL field verdicts regardless of number of mismatches (no partial results).
 
 ## 6. Non-Functional Requirements
 - **Performance**: End-to-end verification within 5 seconds for typical label images on Vercel; OCR invocation under 3 seconds median.
