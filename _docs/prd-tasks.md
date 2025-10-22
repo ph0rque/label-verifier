@@ -21,16 +21,16 @@
 11. [x] Implement text normalization utilities: uppercase, collapse whitespace, strip punctuation (except % and units)
 12. [x] Implement extraction logic for brand, class/type, ABV (regex [0-9]+(\.[0-9]+)?%), net contents (regex [0-9]+\s?(ML|L|FL\.?\s?OZ|OZ)), government warning phrase
 13. [x] Implement comprehensive comparison logic: case-insensitive substring match for brand/class, ±0.1% tolerance for ABV, exact match for net contents, government warning detection
-14. [ ] Structure and return JSON payload with overallStatus (match|mismatch|unreadable), per-field checks array, notes array
-15. [ ] Implement error handling for OCR failures, invalid files, missing fields, and edge cases
+14. [x] Structure and return JSON payload with overallStatus (match|mismatch|unreadable), per-field checks array, notes array
+15. [x] Implement error handling for OCR failures, invalid files, missing fields, and edge cases
 
 ## Phase 4: Results Display & UX
 
-16. [ ] Build React results component displaying overall verdict banner and per-field checklist
-17. [ ] Implement color-coded status badges (Matched=green, Mismatch=red, Not Found=gray, Missing=yellow) with semantic HTML
-18. [ ] Display form value vs detected label snippet for each mismatch with clear explanations
-19. [ ] Create user-friendly error messages for OCR failures with retry guidance (e.g., higher contrast image)
-20. [ ] Implement loading indicator UI while OCR is processing
+16. [x] Build React results component displaying overall verdict banner and per-field checklist
+17. [x] Implement color-coded status badges (Matched=green, Mismatch=red, Not Found=gray, Missing=yellow) with semantic HTML
+18. [x] Display form value vs detected label snippet for each mismatch with clear explanations
+19. [x] Create user-friendly error messages for OCR failures with retry guidance (e.g., higher contrast image)
+20. [x] Implement loading indicator UI while OCR is processing
 21. [ ] Add ability to revise form inputs or replace image without refilling entire form
 
 ## Phase 5: Testing & Validation

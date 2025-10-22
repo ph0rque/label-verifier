@@ -12,6 +12,7 @@ import {
 
 type FormProps = {
   onSubmit: (values: LabelFormSubmission) => Promise<void> | void;
+  onReset?: () => void;
 };
 
 const DEFAULT_VALUES: LabelFormInput = {
@@ -26,7 +27,7 @@ const DEFAULT_VALUES: LabelFormInput = {
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 const ACCEPTED_FILE_TYPES = ["image/jpeg", "image/png"];
 
-export function LabelVerificationForm({ onSubmit }: FormProps) {
+export function LabelVerificationForm({ onSubmit, onReset }: FormProps) {
   const {
     register,
     handleSubmit,
@@ -231,6 +232,7 @@ export function LabelVerificationForm({ onSubmit }: FormProps) {
             reset(DEFAULT_VALUES);
             setImageFile(null);
             setImageError(null);
+            onReset?.();
           }}
           className="text-sm text-zinc-600 hover:text-zinc-800"
         >

@@ -1,5 +1,9 @@
-import { LabelVerificationForm } from "@/components/Form";
+"use client";
+
 import { useState } from "react";
+import { LabelVerificationForm } from "@/components/Form";
+import { VerificationResults } from "@/components/Results";
+import { LoadingIndicator } from "@/components/LoadingIndicator";
 import type { LabelFormSubmission, VerificationResponse } from "@/types/form";
 
 export default function Home() {
@@ -35,13 +39,15 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error("Verification failed. Please try again.");
+        const data = await response.json().catch(() => null);
+        const message = data?.error ?? "Verification failed. Please try again.";
+        throw new Error(message);
       }
 
       const data = (await response.json()) as VerificationResponse;
       setResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unexpected error");
+      setError(err instanceof Error ? err.message : "Unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -62,26 +68,29 @@ export default function Home() {
       <main className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-medium text-zinc-900">Form Input</h2>
-          <LabelVerificationForm onSubmit={handleSubmit} />
+          <LabelVerificationForm
+            onSubmit={handleSubmit}
+            onReset={() => {
+              setResult(null);
+              setError(null);
+            }}
+          />
         </section>
 
         <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-medium text-zinc-900">Results</h2>
-          {isLoading && (
-            <p className="text-sm text-zinc-500">Processing label...</p>
-          )}
-          {error && (
-            <p className="text-sm text-red-600" role="alert">
-              {error}
-            </p>
-          )}
-          {!isLoading && !error && !result && (
-            <p className="text-sm text-zinc-500">
-              Submit the form to view verification results.
-            </p>
-          )}
-          {/* Results component placeholder for future implementation */}
-          {/* {result && <VerificationResults data={result} />} */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-medium text-zinc-900">Results</h2>
+            {isLoading && <LoadingIndicator />}
+          </div>
+          <div className="mt-4 space-y-4">
+            {!isLoading && !result && !error && (
+              <p className="text-sm text-zinc-500">
+                Submit the form to view verification results.
+              </p>
+            )}
+
+            <VerificationResults result={result} error={error} />
+          </div>
         </section>
       </main>
     </div>
