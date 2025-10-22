@@ -66,12 +66,18 @@ export async function POST(request: NextRequest) {
     try {
       rawText = await extractTextFromImage(labelFile);
     } catch (error) {
+      console.error("OCR error during extractTextFromImage:", error);
       const message =
         error instanceof Error && error.name === "OCR_EXTRACT_FAILED"
           ? "OCR processing failed. Ensure the label image is clear and try again."
           : "Unexpected OCR error occurred. Please retry.";
 
-      return NextResponse.json({ error: message }, { status: 502 });
+      const debug =
+        process.env.NODE_ENV !== "production" && error instanceof Error
+          ? { errorName: error.name, errorMessage: error.message, stack: error.stack }
+          : undefined;
+
+      return NextResponse.json({ error: message, debug }, { status: 502 });
     }
 
     const normalizedText = normalizeText(rawText);

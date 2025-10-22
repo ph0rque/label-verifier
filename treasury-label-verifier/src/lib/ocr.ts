@@ -1,15 +1,35 @@
-import { createWorker } from "tesseract.js";
+import path from "path";
+import fs from "fs";
 
 const OCR_ERROR_TOKEN = "OCR_EXTRACT_FAILED";
 
-let workerPromise: ReturnType<typeof createWorker> | null = null;
+// Defer requiring tesseract.js until runtime to avoid bundler worker rewriting
+let workerPromise: any | null = null;
 
 async function getWorker() {
   if (!workerPromise) {
-    workerPromise = createWorker({ logger: () => {} });
-    await workerPromise.load();
-    await workerPromise.loadLanguage("eng");
-    await workerPromise.initialize("eng");
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createWorker } = require("tesseract.js") as { createWorker: (opts: any) => Promise<any> | any };
+    const cwd = process.cwd();
+    const workerPath = path.resolve(cwd, "node_modules/tesseract.js/dist/worker.min.js");
+    const corePath = path.resolve(cwd, "node_modules/tesseract.js-core/tesseract-core.wasm.js");
+    const localEng = fs.existsSync(path.resolve(cwd, "eng.traineddata")) || fs.existsSync(path.resolve(cwd, "eng.traineddata.gz"));
+    const langPath = localEng ? cwd : "https://tessdata.projectnaptha.com/4.0.0";
+
+    const worker = await createWorker({
+      logger: () => {},
+      workerPath,
+      corePath,
+      langPath,
+    });
+
+    if (typeof worker.load === "function") {
+      await worker.load();
+    }
+    await worker.loadLanguage("eng");
+    await worker.initialize("eng");
+
+    workerPromise = worker;
   }
   return workerPromise;
 }
