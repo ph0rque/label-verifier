@@ -31,22 +31,22 @@
 18. [x] Display form value vs detected label snippet for each mismatch with clear explanations
 19. [x] Create user-friendly error messages for OCR failures with retry guidance (e.g., higher contrast image)
 20. [x] Implement loading indicator UI while OCR is processing
-21. [ ] Add ability to revise form inputs or replace image without refilling entire form
+21. [x] Add ability to revise form inputs or replace image without refilling entire form
 
 ## Phase 5: Testing & Validation
 
-22. [ ] Manual test: perfect-match.jpg with matching form data (Old Tom Distillery, 45%, 750mL, etc.) - verify all fields pass
-23. [ ] Manual test: mismatch.jpg with form data showing different ABV and class/type - verify mismatches are detected and reported
-24. [ ] Manual test: blurry.jpg - verify graceful error handling and helpful error message
-25. [ ] Test edge cases: missing fields, invalid file types, oversized files, OCR extraction failures
-26. [ ] Optional: Add unit tests for comparison utilities (string matching, ABV tolerance, regex extraction)
-27. [ ] Verify keyboard navigation, screen reader labels, color contrast ratios meet baseline standards
+22. [x] Manual test: perfect-match.jpg with matching form data (Old Tom Distillery, 45%, 750mL, etc.) - verify all fields pass
+23. [x] Manual test: mismatch.jpg with form data showing different ABV and class/type - verify mismatches are detected and reported
+24. [x] Manual test: blurry.jpg - verify graceful error handling and helpful error message
+25. [x] Test edge cases: missing fields, invalid file types, oversized files, OCR extraction failures
+26. [x] Optional: Add unit tests for comparison utilities (string matching, ABV tolerance, regex extraction)
+27. [x] Verify keyboard navigation, screen reader labels, color contrast ratios meet baseline standards
 
 ## Phase 6: Deployment & Documentation
 
-28. [ ] Configure Vercel deployment with environment variables and build settings
-29. [ ] Write README with local development setup: npm install, npm run dev, .env.local instructions
-30. [ ] Document deployment process and deployed app URL in README
-31. [ ] Document technical decisions and assumptions (e.g., OCR tolerance, matching logic, Tesseract.js choice)
+28. [x] Configure Vercel deployment with environment variables and build settings
+29. [x] Write README with local development setup: npm install, npm run dev, .env.local instructions
+30. [x] Document deployment process and deployed app URL in README
+31. [x] Document technical decisions and assumptions (e.g., OCR tolerance, matching logic, Tesseract.js choice)
 32. [ ] Final smoke test on deployed Vercel instance: submit form, verify OCR, check results
 33. [ ] Code cleanup, console error checks, performance optimization, final visual pass

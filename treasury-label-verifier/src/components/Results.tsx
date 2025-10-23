@@ -51,6 +51,7 @@ export function VerificationResults({ result, error }: ResultsProps) {
       <div
         className={`rounded-md border px-4 py-3 text-sm font-medium ${STATUS_CLASSES[result.overallStatus]}`.trim()}
         role="status"
+        aria-live="polite"
       >
         {STATUS_LABELS[result.overallStatus]}
       </div>
