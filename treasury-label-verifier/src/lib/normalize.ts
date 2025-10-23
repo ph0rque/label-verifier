@@ -8,6 +8,14 @@ export function normalizeText(text: string): string {
     .trim();
 }
 
+export function normalizeForOcrMatching(text: string): string {
+  return text
+    .toUpperCase()
+    .replace(/[^A-Z0-9%\s\.\/]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function stripPunctuationExceptPercentAndUnits(text: string): string {
   return text.replace(/[^A-Z0-9% \./]/g, "");
 }

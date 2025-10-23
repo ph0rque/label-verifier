@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractTextFromImage } from "@/lib/ocr";
-import { normalizeText } from "@/lib/normalize";
+import { normalizeForOcrMatching } from "@/lib/normalize";
 import {
   compareStringField,
   compareAlcoholContent,
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message, debug }, { status: 502 });
     }
 
-    const normalizedText = normalizeText(rawText);
+    const normalizedText = normalizeForOcrMatching(rawText);
 
     if (!normalizedText) {
       const response: VerificationResponse = {
