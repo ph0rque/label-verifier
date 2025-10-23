@@ -29,8 +29,8 @@ A full-stack TypeScript web application that simulates the TTB (Alcohol and Toba
 
 ```bash
 # Clone the repository
-git clone https://github.com/ph0rque/treasury.gov.git
-cd treasury.gov/treasury-label-verifier
+git clone https://github.com/ph0rque/label-verifier.git
+cd label-verifier/app
 
 # Install dependencies
 npm install
@@ -52,31 +52,22 @@ No environment variables are required for local development. For production:
 ### Project Structure
 
 ```
-treasury-label-verifier/
-├── src/
-│   ├── app/                   # Next.js App Router pages & API routes
-│   │   ├── api/verify/        # POST /api/verify endpoint
-│   │   ├── page.tsx           # Main form & results page
-│   │   ├── layout.tsx         # Root layout
-│   │   └── globals.css        # Global styles
-│   ├── components/            # React components
-│   │   ├── Form.tsx           # Label verification form
-│   │   ├── Results.tsx        # Verification results display
-│   │   └── LoadingIndicator.tsx
-│   ├── lib/                   # Business logic utilities
-│   │   ├── ocr.ts             # Tesseract.js OCR extraction
-│   │   ├── compare.ts         # Field comparison logic
-│   │   └── normalize.ts       # Text normalization
-│   ├── types/                 # TypeScript type definitions
-│   │   └── form.ts            # Form & verification types
-│   └── __tests__/             # Jest unit tests
-├── scripts/
-│   └── ocr-worker.cjs         # Standalone OCR worker (dev only)
-├── test-images/               # Sample test images
-│   ├── perfect-match.jpg
-│   ├── mismatch.jpg
-│   └── blurry.jpg
-└── eng.traineddata            # Tesseract English language data
+label-verifier/
+├── app/
+│   ├── src/
+│   │   ├── app/                   # Next.js App Router pages & API routes
+│   │   ├── components/            # React components
+│   │   ├── lib/                   # Business logic utilities
+│   │   ├── types/                 # TypeScript type definitions
+│   │   └── __tests__/             # Jest unit tests
+│   ├── scripts/
+│   │   └── ocr-worker.cjs         # Standalone OCR worker (dev only)
+│   ├── public/                    # Static assets
+│   ├── eng.traineddata            # Tesseract English language data
+│   └── package.json               # Next.js project manifest
+├── _docs/                         # Assignment and PRD materials
+├── memory-bank/                   # Project memory context files
+└── test-images/                   # Sample label images used in tests
 ```
 
 ## Testing
@@ -106,7 +97,7 @@ Use the provided test images in `test-images/`:
 
 1. Push your code to GitHub
 2. Import the project in [Vercel](https://vercel.com/new)
-3. Set the root directory to `treasury-label-verifier`
+3. Set the root directory to `app`
 4. Deploy
 
 Vercel will automatically:

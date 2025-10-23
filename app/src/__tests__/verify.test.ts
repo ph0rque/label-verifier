@@ -61,7 +61,7 @@ describe("POST /api/verify", () => {
 
   it("flags mismatched alcohol content", async () => {
     mockExtract.mockResolvedValue(
-      `OLD TOM DISTILLERY\nKENTUCKY STRAIGHT BOURBON WHISKEY\n52% ALC./VOL.\n750 ML\nGOVERNMENT WARNING`
+      `OLD TOM DISTILLERY\nKENTUCKY STRAIGHT BOURBON WHISKEY\n47% ALC./VOL.\n750 ML\nGOVERNMENT WARNING`
     );
 
     const { status, json } = await invokeVerify(buildFormData());

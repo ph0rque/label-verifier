@@ -1,16 +1,26 @@
 # System Patterns
 
 ## Architectural Overview
-- Anticipated structure: frontend client (SPA or server-rendered) interacting with backend API endpoint for OCR processing.
-- Backend service handles image upload, temporary storage (in-memory or temp files), OCR call, text normalization, and comparison logic.
-- Result payload communicates per-field verdicts and overall match status back to the client.
+- **Next.js App Router** single-page application with server-side API route (`/api/verify`)
+- Frontend: React components (Form, Results, LoadingIndicator) with React Hook Form and Zod validation
+- Backend: Next.js API route handles multipart form upload, OCR processing, comparison, and structured JSON response
+- OCR executes in serverless function with dual-mode support (child process for dev, in-process for Vercel)
+- No database or session storage; stateless request/response pattern
 
 ## Integration Points
-- OCR provider/library (e.g., Tesseract, cloud OCR APIs).
-- Optional deployment services (Vercel, Netlify for frontend; Render, Heroku, etc., for backend) depending on implementation choice.
+- **Tesseract.js 4.1.1**: Bundled OCR engine with English language data
+- **Sharp**: Image preprocessing (grayscale, normalize, sharpen, upscale to 1200px)
+- **Vercel**: Serverless deployment platform with automatic Next.js detection
+- OCR worker fallback: External Node script (`scripts/ocr-worker.cjs`) for local development
 
 ## Key Patterns
-- Stateless processing: every submission includes all needed data; no persistent DB required.
-- Defensive error handling for OCR failures, unsupported file formats, and missing form fields.
-- Configurable thresholds for string matching (case-insensitive, tolerance for minor OCR errors).
+- **Dual OCR Strategy**: Child process worker in dev mode, in-process API in production (Vercel constraints)
+- **Defensive Comparison Logic**: 
+  - Fuzzy token matching for brand/class (Levenshtein distance with 0.66-0.75 tolerance)
+  - ABV tolerance: ±0.5% with plausibility checks (10-80% range, <5% from expected)
+  - Net contents: ratio matching (0.8-1.25x) to handle minor OCR errors
+  - Government warning: fuzzy token proximity detection
+- **Comprehensive Error Handling**: Returns structured response even for OCR failures, invalid files, or unreadable images
+- **Stateless Processing**: Each verification is independent; no persistence between requests
+- **Client-side Validation**: Zod schema validates before submission, duplicated server-side for security
 

@@ -20,7 +20,6 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
   // Prefer in-process recognize on platforms where child_process isn't allowed (e.g., Vercel)
   const preferInProcess = process.env.VERCEL === "1" || process.env.DISABLE_CHILD_OCR === "true";
   if (preferInProcess) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { recognize } = require("tesseract.js") as { recognize: Function };
     const corePath = require.resolve("tesseract.js-core/tesseract-core.wasm.js");
     const langPath = fs.existsSync(path.join(process.cwd(), "eng.traineddata")) || fs.existsSync(path.join(process.cwd(), "eng.traineddata.gz"))
