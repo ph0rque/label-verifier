@@ -8,7 +8,10 @@
 
 ## Core Dependencies
 - **OCR & Image Processing**:
-  - `tesseract.js` 4.1.1 - OCR engine with English language pack
+  - `@google-cloud/vision` 5.3.4 - Production OCR via Cloud Vision API
+  - `tesseract.js` 4.1.4 - Local development OCR engine
+  - `tesseract.js-core` 4.0.3 - Tesseract WASM core (dev only)
+  - `node-fetch` 2.7.0 - HTTP client for Cloud Vision API
   - `sharp` 0.33.5 - Image preprocessing and optimization
 - **Form Handling & Validation**:
   - `react-hook-form` 7.53.1 - Form state management
@@ -41,12 +44,14 @@ label-verifier/
 ## Environment & Config
 - **Development**: 
   - `npm run dev` starts Next.js dev server on port 3000
-  - OCR uses child process worker (`scripts/ocr-worker.cjs`) to avoid webpack issues
+  - OCR uses child process worker (`scripts/ocr-worker.cjs`) with local Tesseract.js
+  - Optional: Set `GOOGLE_CLOUD_VISION_API_KEY` in `app/.env` to test Cloud Vision locally
 - **Production (Vercel)**:
-  - `VERCEL=1` auto-detected, enables in-process OCR mode
-  - `DISABLE_CHILD_OCR=true` forces in-process mode if needed
+  - `GOOGLE_CLOUD_VISION_API_KEY` - **Required** environment variable for production OCR
+  - `VERCEL=1` - Auto-detected by platform
   - Root directory set to `app/` in Vercel project settings
-- **Testing**: `npm test` runs Jest with coverage reporting
+  - Automatic fallback to Tesseract.js if API key not configured (for development deployments)
+- **Testing**: `npm test` runs Jest with coverage reporting (27 tests)
 - **Linting**: `npm run lint` runs Next.js ESLint via `.eslintrc.json`
 
 ## Key Configuration Files
