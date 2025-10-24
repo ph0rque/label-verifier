@@ -16,17 +16,73 @@ export async function extractTextFromImage(file: File): Promise<string> {
   }
 }
 
+async function preprocessImage(imageBuffer: Buffer): Promise<Buffer> {
+  try {
+    const sharpModule = await import("sharp");
+    const sharp = (sharpModule as { default?: typeof import("sharp") }).default ??
+      (sharpModule as unknown as typeof import("sharp"));
+
+    let image = sharp(imageBuffer).grayscale().normalize().sharpen();
+    const metadata = await image.metadata();
+    if (metadata.width && metadata.width < 1200) {
+      image = image.resize({ width: 1200, withoutEnlargement: false });
+    }
+    return await image.toBuffer();
+  } catch (error) {
+    console.warn("Image preprocessing skipped; falling back to raw buffer", error);
+    return imageBuffer;
+  }
+}
+
+function resolveLanguageDataPath(): string {
+  const cwd = process.cwd();
+  const hasLocalData = ["eng.traineddata", "eng.traineddata.gz"].some((filename) =>
+    fs.existsSync(path.join(cwd, filename)),
+  );
+  return hasLocalData ? cwd : "https://tessdata.projectnaptha.com/4.0.0";
+}
+
 export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string> {
   // Prefer in-process recognize on platforms where child_process isn't allowed (e.g., Vercel)
   const preferInProcess = process.env.VERCEL === "1" || process.env.DISABLE_CHILD_OCR === "true";
   if (preferInProcess) {
-    const { recognize } = require("tesseract.js") as { recognize: Function };
+    const tesseractModule = await import("tesseract.js");
+    const createWorker =
+      (tesseractModule as { createWorker?: typeof import("tesseract.js").createWorker }).createWorker ??
+      (tesseractModule as { default?: { createWorker?: typeof import("tesseract.js").createWorker } }).default
+        ?.createWorker;
+    const PSM =
+      (tesseractModule as { PSM?: typeof import("tesseract.js").PSM }).PSM ??
+      (tesseractModule as { default?: { PSM?: typeof import("tesseract.js").PSM } }).default?.PSM;
+
+    if (!createWorker) {
+      throw new Error("Tesseract createWorker is unavailable in the current environment");
+    }
     const corePath = require.resolve("tesseract.js-core/tesseract-core.wasm.js");
-    const langPath = fs.existsSync(path.join(process.cwd(), "eng.traineddata")) || fs.existsSync(path.join(process.cwd(), "eng.traineddata.gz"))
-      ? process.cwd()
-      : "https://tessdata.projectnaptha.com/4.0.0";
-    const { data } = await recognize(imageBuffer, "eng", { corePath, langPath });
-    return data?.text ?? "";
+    const langPath = resolveLanguageDataPath();
+    const processedBuffer = await preprocessImage(imageBuffer);
+
+    const worker = await createWorker({ corePath, langPath, logger: () => {} });
+    try {
+      if (typeof worker.load === "function") {
+        await worker.load();
+      }
+      await worker.loadLanguage("eng");
+      await worker.initialize("eng");
+      if (typeof worker.setParameters === "function" && PSM) {
+        await worker.setParameters({
+          tessedit_pageseg_mode: String(PSM.SINGLE_BLOCK),
+          preserve_interword_spaces: "1",
+          user_defined_dpi: "300",
+        });
+      }
+      const { data } = await worker.recognize(processedBuffer);
+      return data?.text ?? "";
+    } finally {
+      if (typeof worker.terminate === "function") {
+        await worker.terminate();
+      }
+    }
   }
 
   // Default: Run OCR via external Node worker script to avoid Next.js bundler worker path issues in dev
