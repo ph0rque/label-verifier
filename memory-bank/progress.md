@@ -14,6 +14,9 @@
 - Updated ocr.ts: Changed tmpPath to use /tmp directory for writability on Vercel.
 - Deployment succeeded but runtime error: MODULE_NOT_FOUND for tesseract.js in ocr-worker.cjs.
 - Updated vercel.json: Expanded includeFiles to {scripts/ocr-worker.cjs,eng.traineddata,node_modules/tesseract.js/**,node_modules/tesseract.js-core/**} to bundle full tesseract.js module.
+- Ported OCR logic from ocr-worker.cjs directly into ocr.ts for in-process execution on Vercel, avoiding spawn.
+- Simplified vercel.json includeFiles to {eng.traineddata,node_modules/tesseract.js-core/**}.
+- Deployment succeeded but runtime error: Cannot find module '/var/task/app/.next/worker-script/node/index.js' (likely related to Tesseract worker thread configuration).
 - Awaiting deployment results for final verification.
 
 ### Previous Unresolved Attempts (from earlier)

@@ -56,7 +56,12 @@ export async function extractTextFromBuffer(
     }
     const preprocessed = await img.toBuffer();
 
-    const worker = await createWorker({ corePath, langPath, logger: () => {} });
+    const worker = await createWorker({ 
+      corePath, 
+      langPath, 
+      logger: () => {}, 
+      workerPath: require.resolve('tesseract.js/dist/worker.min.js')
+    });
 
     await worker.load();
     await worker.loadLanguage('eng');
