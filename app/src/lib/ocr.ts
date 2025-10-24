@@ -4,6 +4,14 @@ import { spawn } from "child_process";
 
 const OCR_ERROR_TOKEN = "OCR_EXTRACT_FAILED";
 const REMOTE_CORE_BASE = "https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0";
+const LOCAL_WORKER_PATH = (() => {
+  try {
+    return require.resolve("tesseract.js/dist/worker.min.js");
+  } catch (error) {
+    console.warn("Unable to resolve local tesseract worker script", error);
+    return undefined;
+  }
+})();
 
 export async function extractTextFromImage(file: File): Promise<string> {
   try {
@@ -87,12 +95,15 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
       cacheMethod: "none",
     };
 
+    if (LOCAL_WORKER_PATH) {
+      workerOptions.workerPath = LOCAL_WORKER_PATH;
+    }
+
     if (corePath.startsWith("http")) {
       workerOptions.cachePath = "";
       workerOptions.cacheMethod = "fetch";
-      workerOptions.workerPath = `${REMOTE_CORE_BASE}/tesseract.worker.min.js`;
-      workerOptions.workerBlobURL = false;
       workerOptions.langPath = REMOTE_CORE_BASE;
+      (workerOptions as Record<string, unknown>).workerBlobURL = false;
       (workerOptions as { locateFile?: (path: string, prefix?: string) => string }).locateFile = (file) => {
         if (file.endsWith(".wasm")) {
           return `${REMOTE_CORE_BASE}/${file}`;
