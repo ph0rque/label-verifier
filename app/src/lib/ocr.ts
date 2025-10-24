@@ -69,9 +69,9 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
       }
       await worker.loadLanguage("eng");
       await worker.initialize("eng");
-      if (typeof worker.setParameters === "function" && PSM) {
+      if (typeof worker.setParameters === "function" && PSM?.SINGLE_BLOCK !== undefined) {
         await worker.setParameters({
-          tessedit_pageseg_mode: String(PSM.SINGLE_BLOCK),
+          tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
           preserve_interword_spaces: "1",
           user_defined_dpi: "300",
         });
