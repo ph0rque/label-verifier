@@ -42,13 +42,22 @@ export async function extractTextFromBuffer(
   const preferInProcess = isVercel || process.env.DISABLE_CHILD_OCR === "true";
 
   if (preferInProcess) {
-    // Ported from ocr-worker.cjs for in-process execution
     const { createWorker, PSM } = await import("tesseract.js");
     const sharp = await import("sharp");
 
-    const corePath = path.join(process.cwd(), "node_modules", "tesseract.js-core", "tesseract-core.wasm.js");
-    const workerPath = path.join(process.cwd(), "node_modules", "tesseract.js", "dist", "worker.min.js");
-    const langPath = path.join(process.cwd(), "eng.traineddata");
+    const runtimeBase = isVercel
+      ? path.join(process.cwd(), "..", ".tesseract-runtime")
+      : path.join(process.cwd(), ".tesseract-runtime");
+
+    const workerPath = fs.existsSync(runtimeBase)
+      ? path.join(runtimeBase, "worker.min.js")
+      : path.join(process.cwd(), "node_modules", "tesseract.js", "dist", "worker.min.js");
+    const corePath = fs.existsSync(runtimeBase)
+      ? path.join(runtimeBase, "tesseract-core.wasm.js")
+      : path.join(process.cwd(), "node_modules", "tesseract.js-core", "tesseract-core.wasm.js");
+    const langPath = fs.existsSync(runtimeBase)
+      ? path.join(runtimeBase, "eng.traineddata")
+      : path.join(process.cwd(), "eng.traineddata");
 
     let img = sharp.default(imageBuffer).grayscale().normalize().sharpen();
     const meta = await img.metadata();

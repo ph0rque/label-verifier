@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run prepare:tesseract && next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "prepare:tesseract": "node scripts/prepare-tesseract-assets.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

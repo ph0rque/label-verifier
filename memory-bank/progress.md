@@ -19,7 +19,10 @@
 - Deployment succeeded but runtime error: Cannot find module '/var/task/app/.next/worker-script/node/index.js' (likely related to Tesseract worker thread configuration).
 - Added explicit workerPath to createWorker using require.resolve and expanded includeFiles to include the dist folder.
 - Deployment pending for manual path resolution (Option 1): build worker/core/lang paths using process.cwd() + path.join, set workerBlobURL=false and cachePath=/tmp.
-- Awaiting deployment results for final verification.
+- Deployment failed: Vercel still cannot locate /var/task/app/node_modules/tesseract.js/dist/worker.min.js even with process.cwd()-based paths (node_modules pruned from bundle).
+- **Next Plan**: Vendor required Tesseract runtime assets during build by copying worker.min.js and tesseract-core.wasm.js into a project directory bundled via includeFiles, then reference those paths directly.
+- Implemented asset vendoring: added prepare script to copy worker/wasm/lang into .tesseract-runtime, updated ocr.ts to load from vendored paths on Vercel, and updated vercel.json to include the new directory.
+- Awaiting deployment results for vendored asset approach.
 
 ### Previous Unresolved Attempts (from earlier)
 - Tried forcing Tesseract to load wasm from CDN (`corePath`/`langPath`), but runtime still resolved `node_modules/tesseract.js-core/tesseract-core-simd.wasm` and failed.
