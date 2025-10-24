@@ -5,16 +5,26 @@ function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
 }
 
-function copyAsset(source, destination) {
+function copyFileAsset(source, destination) {
   if (!fs.existsSync(source)) {
     throw new Error(`Missing Tesseract asset: ${source}`);
   }
+  ensureDir(path.dirname(destination));
   fs.copyFileSync(source, destination);
+}
+
+function copyDirAsset(source, destination) {
+  if (!fs.existsSync(source)) {
+    throw new Error(`Missing Tesseract asset directory: ${source}`);
+  }
+  fs.rmSync(destination, { recursive: true, force: true });
+  fs.cpSync(source, destination, { recursive: true });
 }
 
 function main() {
   const projectRoot = path.join(__dirname, '..');
   const runtimeDir = path.join(projectRoot, '.tesseract-runtime');
+  fs.rmSync(runtimeDir, { recursive: true, force: true });
   ensureDir(runtimeDir);
 
   const assets = [
@@ -26,13 +36,16 @@ function main() {
 
   for (const [source, filename] of assets) {
     const destination = path.join(runtimeDir, filename);
-    copyAsset(source, destination);
+    copyFileAsset(source, destination);
   }
 
-  // Copy eng trained data alongside runtime assets for consistency
+  const workerScriptSource = path.join(projectRoot, 'node_modules', 'tesseract.js', 'src', 'worker-script');
+  const workerScriptDestination = path.join(runtimeDir, 'worker-script');
+  copyDirAsset(workerScriptSource, workerScriptDestination);
+
   const langSource = path.join(projectRoot, 'eng.traineddata');
   if (fs.existsSync(langSource)) {
-    copyAsset(langSource, path.join(runtimeDir, 'eng.traineddata'));
+    copyFileAsset(langSource, path.join(runtimeDir, 'eng.traineddata'));
   }
 }
 

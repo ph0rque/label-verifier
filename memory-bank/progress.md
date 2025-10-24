@@ -26,6 +26,8 @@
 - Adjusted ocr.ts to search multiple potential runtime directories (../.tesseract-runtime, ../../.tesseract-runtime, ../static/.tesseract-runtime) before falling back to local node_modules.
 - Deployment failed: Worker execution threw TypeError addEventListener is not a function (browser worker bundle incompatible with Node worker_threads).
 - Updated ocr.ts to use tesseract.js native node worker script via require.resolve("tesseract.js/src/worker-script/node/index.js") when on Vercel, with gzip disabled.
+- Deployment failed: Worker constructor received numeric module id (ERR_INVALID_ARG_TYPE), indicating module path bundling via Next/webpack (`require.resolve` replaced with chunk id).
+- **Next Plan**: Vendor the node worker script directory (`src/worker-script/node/**`) into `.tesseract-runtime` and reference it via absolute path string to avoid module id rewriting.
 - Awaiting deployment results for native node worker script approach.
 
 ### Previous Unresolved Attempts (from earlier)

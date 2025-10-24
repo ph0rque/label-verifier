@@ -54,8 +54,9 @@ export async function extractTextFromBuffer(
     const existingRuntimeBase = deploymentRuntimeBases.find((base) => fs.existsSync(base));
     const runtimeBase = existingRuntimeBase ?? path.join(process.cwd(), ".tesseract-runtime");
 
-    const workerPath = isVercel
-      ? require.resolve("tesseract.js/src/worker-script/node/index.js")
+    const workerDirPath = path.join(runtimeBase, "worker-script", "node", "index.js");
+    const workerPath = isVercel && fs.existsSync(workerDirPath)
+      ? workerDirPath
       : fs.existsSync(path.join(runtimeBase, "worker.min.js"))
         ? path.join(runtimeBase, "worker.min.js")
         : path.join(process.cwd(), "node_modules", "tesseract.js", "dist", "worker.min.js");

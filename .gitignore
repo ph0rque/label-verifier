@@ -43,4 +43,5 @@ test-results/
 # Build artifacts
 dist/
 build/
+.tesseract-runtime/
 
