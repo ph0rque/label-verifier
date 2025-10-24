@@ -77,34 +77,14 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
       (tesseractModule as { recognize?: typeof import("tesseract.js").recognize }).recognize ??
       (tesseractModule as { default?: { recognize?: typeof import("tesseract.js").recognize } }).default
         ?.recognize;
-    const PSM =
-      (tesseractModule as { PSM?: typeof import("tesseract.js").PSM }).PSM ??
-      (tesseractModule as { default?: { PSM?: typeof import("tesseract.js").PSM } }).default?.PSM;
 
     if (!recognize) {
       throw new Error("Tesseract recognize is unavailable in the current environment");
     }
 
-    const corePath = resolveCoreScriptPath();
-    const langPath = resolveLanguageDataPath();
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    const options: Record<string, unknown> = {
-      corePath,
-      langPath,
-      cacheMethod: corePath.startsWith("http") ? "fetch" : "none",
-    };
-
-    if (corePath.startsWith("http")) {
-      options.workerBlobURL = false;
-    }
-
-    const { data } = await recognize(processedBuffer, "eng", options);
-
-    if (PSM?.SINGLE_BLOCK !== undefined && data?.confidence !== undefined) {
-      // No direct setParameters when using recognize; rely on preprocessing.
-    }
-
+    const { data } = await recognize(processedBuffer, "eng");
     return data?.text ?? "";
   }
 
