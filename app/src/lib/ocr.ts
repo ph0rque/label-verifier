@@ -3,7 +3,7 @@ import fs from "fs";
 import { spawn } from "child_process";
 
 const OCR_ERROR_TOKEN = "OCR_EXTRACT_FAILED";
-const REMOTE_CORE_BASE = "https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0";
+const REMOTE_CORE_DIR = "https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0";
 
 export async function extractTextFromImage(file: File): Promise<string> {
   try {
@@ -53,7 +53,7 @@ function resolveCoreScriptPath(): string {
   }
 
   if (process.env.VERCEL === "1" || process.env.USE_REMOTE_TESSERACT === "true") {
-    return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
+    return `${REMOTE_CORE_DIR}/tesseract-core-simd.wasm.js`;
   }
 
   try {
@@ -63,7 +63,7 @@ function resolveCoreScriptPath(): string {
       return require.resolve("tesseract.js-core/tesseract-core.wasm.js");
     } catch (fallbackError) {
       console.warn("Failed to resolve local tesseract core script", error, fallbackError);
-      return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
+      return `${REMOTE_CORE_DIR}/tesseract-core-simd.wasm.js`;
     }
   }
 }
@@ -84,7 +84,10 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
 
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    const { data } = await recognize(processedBuffer, "eng");
+    const { data } = await recognize(processedBuffer, "eng", {
+      cacheMethod: "fetch",
+      corePath: REMOTE_CORE_DIR,
+    });
     return data?.text ?? "";
   }
 
