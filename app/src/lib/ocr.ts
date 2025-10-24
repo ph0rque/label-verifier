@@ -50,8 +50,15 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
 
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    // Use default tesseract.js paths (wasm files included via vercel.json includeFiles)
-    const { data } = await recognize(processedBuffer, "eng");
+    // On Vercel, use public directory for wasm files (copied during build)
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+    
+    const { data } = await recognize(processedBuffer, "eng", {
+      langPath: "https://tessdata.projectnaptha.com/4.0.0",
+      corePath: `${baseUrl}/tesseract`,
+    });
     return data?.text ?? "";
   }
 
