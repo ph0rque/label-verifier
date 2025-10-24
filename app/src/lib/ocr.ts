@@ -64,7 +64,7 @@ export async function extractTextFromBuffer(
 
   // Default: Run OCR via external Node worker script to avoid Next.js bundler worker path issues in dev
   const tmpPath = path.join(process.cwd(), `.tmp-ocr-${Date.now()}.bin`);
-  fs.writeFileSync(tmpPath, imageBuffer as Uint8Array);
+  fs.writeFileSync(tmpPath, imageBuffer as unknown as Uint8Array);
   try {
     const scriptPath = path.join(process.cwd(), "scripts", "ocr-worker.cjs");
     const child = spawn(process.execPath, [scriptPath, tmpPath], { stdio: ["ignore", "pipe", "pipe"] });
