@@ -9,7 +9,7 @@ const LOCAL_WORKER_PATH = (() => {
     return require.resolve("tesseract.js/dist/worker.min.js");
   } catch (error) {
     console.warn("Unable to resolve local tesseract worker script", error);
-    return undefined;
+    return null;
   }
 })();
 
@@ -51,9 +51,17 @@ function resolveLanguageDataPath(): string {
   return hasLocalData ? cwd : "https://tessdata.projectnaptha.com/4.0.0";
 }
 
-function resolveCoreScriptPath(): string {
+function resolveCoreScriptPath(): string | null {
+  if (process.env.TESSERACT_LOCAL_CORE === "1") {
+    try {
+      return require.resolve("tesseract.js-core/tesseract-core.wasm.js");
+    } catch (error) {
+      console.warn("Unable to resolve local core wasm", error);
+    }
+  }
+
   if (process.env.VERCEL === "1" || process.env.USE_REMOTE_TESSERACT === "true") {
-    return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
+    return null;
   }
 
   try {
@@ -63,7 +71,7 @@ function resolveCoreScriptPath(): string {
       return require.resolve("tesseract.js-core/tesseract-core.wasm.js");
     } catch (fallbackError) {
       console.warn("Failed to resolve local tesseract core script", error, fallbackError);
-      return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
+      return null;
     }
   }
 }
@@ -89,27 +97,22 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
     const processedBuffer = await preprocessImage(imageBuffer);
 
     const workerOptions: Record<string, unknown> = {
-      corePath,
-      langPath,
       logger: () => {},
       cacheMethod: "none",
     };
 
-    if (LOCAL_WORKER_PATH) {
-      workerOptions.workerPath = LOCAL_WORKER_PATH;
-    }
+    const effectiveWorkerPath = LOCAL_WORKER_PATH ?? require.resolve("tesseract.js/dist/worker.min.js");
+    workerOptions.workerPath = effectiveWorkerPath;
+    workerOptions.langPath = langPath;
 
-    if (corePath.startsWith("http")) {
+    if (!corePath) {
+      // Remote execution: rely on worker script to fetch core from CDN
       workerOptions.cachePath = "";
       workerOptions.cacheMethod = "fetch";
-      workerOptions.langPath = REMOTE_CORE_BASE;
-      (workerOptions as Record<string, unknown>).workerBlobURL = false;
-      (workerOptions as { locateFile?: (path: string, prefix?: string) => string }).locateFile = (file) => {
-        if (file.endsWith(".wasm")) {
-          return `${REMOTE_CORE_BASE}/${file}`;
-        }
-        return `${REMOTE_CORE_BASE}/${file}`;
-      };
+      workerOptions.workerBlobURL = false;
+      workerOptions.corePath = REMOTE_CORE_BASE;
+    } else {
+      workerOptions.corePath = corePath;
     }
 
     const worker = await createWorker(workerOptions as any);
