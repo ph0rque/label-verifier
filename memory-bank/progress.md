@@ -17,6 +17,8 @@
 - Ported OCR logic from ocr-worker.cjs directly into ocr.ts for in-process execution on Vercel, avoiding spawn.
 - Simplified vercel.json includeFiles to {eng.traineddata,node_modules/tesseract.js-core/**}.
 - Deployment succeeded but runtime error: Cannot find module '/var/task/app/.next/worker-script/node/index.js' (likely related to Tesseract worker thread configuration).
+- Added explicit workerPath to createWorker using require.resolve and expanded includeFiles to include the dist folder.
+- Deployment pending for manual path resolution (Option 1): build worker/core/lang paths using process.cwd() + path.join, set workerBlobURL=false and cachePath=/tmp.
 - Awaiting deployment results for final verification.
 
 ### Previous Unresolved Attempts (from earlier)

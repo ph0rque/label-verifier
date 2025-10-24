@@ -43,11 +43,12 @@ export async function extractTextFromBuffer(
 
   if (preferInProcess) {
     // Ported from ocr-worker.cjs for in-process execution
-    const { createWorker, PSM } = await import('tesseract.js');
-    const sharp = await import('sharp');
+    const { createWorker, PSM } = await import("tesseract.js");
+    const sharp = await import("sharp");
 
-    const corePath = require.resolve('tesseract.js-core/tesseract-core.wasm.js');
-    const langPath = process.cwd();
+    const corePath = path.join(process.cwd(), "node_modules", "tesseract.js-core", "tesseract-core.wasm.js");
+    const workerPath = path.join(process.cwd(), "node_modules", "tesseract.js", "dist", "worker.min.js");
+    const langPath = path.join(process.cwd(), "eng.traineddata");
 
     let img = sharp.default(imageBuffer).grayscale().normalize().sharpen();
     const meta = await img.metadata();
@@ -56,11 +57,13 @@ export async function extractTextFromBuffer(
     }
     const preprocessed = await img.toBuffer();
 
-    const worker = await createWorker({ 
-      corePath, 
-      langPath, 
-      logger: () => {}, 
-      workerPath: require.resolve('tesseract.js/dist/worker.min.js')
+    const worker = await createWorker({
+      corePath,
+      langPath,
+      workerPath,
+      workerBlobURL: false,
+      cachePath: "/tmp",
+      logger: () => {},
     });
 
     await worker.load();
