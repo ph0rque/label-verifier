@@ -45,17 +45,22 @@ export async function extractTextFromBuffer(
     const { createWorker, PSM } = await import("tesseract.js");
     const sharp = await import("sharp");
 
-    const runtimeBase = isVercel
-      ? path.join(process.cwd(), "..", ".tesseract-runtime")
-      : path.join(process.cwd(), ".tesseract-runtime");
+    const deploymentRuntimeBases = [
+      path.join(process.cwd(), "..", ".tesseract-runtime"),
+      path.join(process.cwd(), "..", "..", ".tesseract-runtime"),
+      path.join(process.cwd(), "..", "static", ".tesseract-runtime"),
+    ];
 
-    const workerPath = fs.existsSync(runtimeBase)
+    const existingRuntimeBase = deploymentRuntimeBases.find((base) => fs.existsSync(base));
+    const runtimeBase = existingRuntimeBase ?? path.join(process.cwd(), ".tesseract-runtime");
+
+    const workerPath = fs.existsSync(path.join(runtimeBase, "worker.min.js"))
       ? path.join(runtimeBase, "worker.min.js")
       : path.join(process.cwd(), "node_modules", "tesseract.js", "dist", "worker.min.js");
-    const corePath = fs.existsSync(runtimeBase)
+    const corePath = fs.existsSync(path.join(runtimeBase, "tesseract-core.wasm.js"))
       ? path.join(runtimeBase, "tesseract-core.wasm.js")
       : path.join(process.cwd(), "node_modules", "tesseract.js-core", "tesseract-core.wasm.js");
-    const langPath = fs.existsSync(runtimeBase)
+    const langPath = fs.existsSync(path.join(runtimeBase, "eng.traineddata"))
       ? path.join(runtimeBase, "eng.traineddata")
       : path.join(process.cwd(), "eng.traineddata");
 
