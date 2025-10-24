@@ -8,7 +8,7 @@
   },
   "functions": {
     "src/app/api/verify/route.ts": {
-      "includeFiles": "{scripts/ocr-worker.cjs,eng.traineddata,node_modules/tesseract.js/**,node_modules/tesseract.js-core/**}",
+      "includeFiles": "{eng.traineddata,node_modules/tesseract.js-core/**}",
       "maxDuration": 60,
       "memory": 1024
     }

@@ -2,7 +2,21 @@
 
 ## 2025-10-24
 
-### Vercel OCR Troubleshooting (Unresolved Attempts)
+### Vercel OCR Troubleshooting (Ongoing Attempts)
+- Updated package.json: Moved tesseract.js-core to dependencies and set version to ^4.0.3 for compatibility.
+- Ran npm install to update dependencies.
+- Modified ocr.ts: Changed preferInProcess to only trigger on DISABLE_CHILD_OCR=true, removing Vercel check; adjusted in-process paths to local requires.
+- Fixed TypeScript linter errors in ocr.ts through multiple edits (casting Buffer to Uint8Array via unknown).
+- Configured vercel.json: Added functions section for src/app/api/verify/route.ts with includeFiles as array, maxDuration 60, memory 1024.
+- Deployment failed: vercel.json schema error (includeFiles expected string, not array).
+- Updated vercel.json: Changed includeFiles to single glob string with brace expansion {scripts/ocr-worker.cjs,eng.traineddata,node_modules/tesseract.js-core/**}.
+- Deployment succeeded but runtime error: EROFS read-only filesystem when writing tmp file to process.cwd().
+- Updated ocr.ts: Changed tmpPath to use /tmp directory for writability on Vercel.
+- Deployment succeeded but runtime error: MODULE_NOT_FOUND for tesseract.js in ocr-worker.cjs.
+- Updated vercel.json: Expanded includeFiles to {scripts/ocr-worker.cjs,eng.traineddata,node_modules/tesseract.js/**,node_modules/tesseract.js-core/**} to bundle full tesseract.js module.
+- Awaiting deployment results for final verification.
+
+### Previous Unresolved Attempts (from earlier)
 - Tried forcing Tesseract to load wasm from CDN (`corePath`/`langPath`), but runtime still resolved `node_modules/tesseract.js-core/tesseract-core-simd.wasm` and failed.
 - Removed `tesseract.js-core` from runtime dependencies (dev-only) to avoid local resolution; error persisted.
 - Added `includeFiles` in `vercel.json` to bundle wasm assets with the serverless function; Vercel still could not locate them at runtime.

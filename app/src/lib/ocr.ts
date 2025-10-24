@@ -38,31 +38,42 @@ export async function extractTextFromBuffer(
   imageBuffer: Buffer,
   coreBaseUrl?: string,
 ): Promise<string> {
-  // Prefer in-process recognize on platforms where child_process isn't allowed (e.g., Vercel)
-  const preferInProcess = process.env.DISABLE_CHILD_OCR === "true";
+  const isVercel = process.env.VERCEL === "1";
+  const preferInProcess = isVercel || process.env.DISABLE_CHILD_OCR === "true";
+
   if (preferInProcess) {
-    const tesseractModule = await import("tesseract.js");
-    const recognize =
-      (tesseractModule as { recognize?: typeof import("tesseract.js").recognize }).recognize ??
-      (tesseractModule as { default?: { recognize?: typeof import("tesseract.js").recognize } }).default
-        ?.recognize;
+    // Ported from ocr-worker.cjs for in-process execution
+    const { createWorker, PSM } = await import('tesseract.js');
+    const sharp = await import('sharp');
 
-    if (!recognize) {
-      throw new Error("Tesseract recognize is unavailable in the current environment");
+    const corePath = require.resolve('tesseract.js-core/tesseract-core.wasm.js');
+    const langPath = process.cwd();
+
+    let img = sharp.default(imageBuffer).grayscale().normalize().sharpen();
+    const meta = await img.metadata();
+    if (meta.width && meta.width < 1200) {
+      img = img.resize({ width: 1200, withoutEnlargement: false });
     }
+    const preprocessed = await img.toBuffer();
 
-    const processedBuffer = await preprocessImage(imageBuffer);
+    const worker = await createWorker({ corePath, langPath, logger: () => {} });
 
-    const { data } = await recognize(processedBuffer, "eng", {
-      langPath: path.join(process.cwd(), "eng.traineddata"),
-      corePath: require.resolve("tesseract.js-core/tesseract-core.wasm.js"),
-      workerPath: require.resolve("tesseract.js/dist/worker.min.js"),
-      workerBlobURL: false,
+    await worker.load();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    await worker.setParameters({
+      tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+      preserve_interword_spaces: '1',
+      user_defined_dpi: '300'
     });
-    return data?.text ?? "";
+
+    const { data } = await worker.recognize(preprocessed);
+    await worker.terminate();
+
+    return data.text || '';
   }
 
-  // Default: Run OCR via external Node worker script to avoid Next.js bundler worker path issues in dev
+  // Default spawn logic for non-Vercel
   const tmpPath = path.join('/tmp', `.tmp-ocr-${Date.now()}.bin`);
   fs.writeFileSync(tmpPath, imageBuffer as unknown as Uint8Array);
   try {
