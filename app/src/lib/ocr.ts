@@ -4,10 +4,10 @@ import { spawn } from "child_process";
 
 const OCR_ERROR_TOKEN = "OCR_EXTRACT_FAILED";
 
-export async function extractTextFromImage(file: File): Promise<string> {
+export async function extractTextFromImage(file: File, coreBaseUrl?: string): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
-    return await extractTextFromBuffer(Buffer.from(arrayBuffer));
+    return await extractTextFromBuffer(Buffer.from(arrayBuffer), coreBaseUrl);
   } catch (error) {
     console.error("OCR extraction failed", error);
     const err = error instanceof Error ? error : new Error(String(error));
@@ -34,7 +34,10 @@ async function preprocessImage(imageBuffer: Buffer): Promise<Buffer> {
   }
 }
 
-export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string> {
+export async function extractTextFromBuffer(
+  imageBuffer: Buffer,
+  coreBaseUrl?: string,
+): Promise<string> {
   // Prefer in-process recognize on platforms where child_process isn't allowed (e.g., Vercel)
   const preferInProcess = process.env.VERCEL === "1" || process.env.DISABLE_CHILD_OCR === "true";
   if (preferInProcess) {
@@ -50,11 +53,7 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
 
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    // On Vercel, use public directory for wasm files (copied during build)
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-    
+    const baseUrl = coreBaseUrl ?? "http://localhost:3000";
     const { data } = await recognize(processedBuffer, "eng", {
       langPath: "https://tessdata.projectnaptha.com/4.0.0",
       corePath: `${baseUrl}/tesseract`,

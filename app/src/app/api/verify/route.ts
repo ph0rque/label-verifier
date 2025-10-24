@@ -62,9 +62,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const headerGet = request.headers?.get?.bind(request.headers);
+    const hostHeader = headerGet ? headerGet("host") ?? "localhost:3000" : "localhost:3000";
+    const origin = hostHeader.startsWith("http://") || hostHeader.startsWith("https://")
+      ? hostHeader
+      : `${hostHeader.startsWith("localhost") || hostHeader.startsWith("127.0.0.1") ? "http" : "https"}://${hostHeader}`;
+
     let rawText = "";
     try {
-      rawText = await extractTextFromImage(labelFile);
+      rawText = await extractTextFromImage(labelFile, origin);
     } catch (error) {
       console.error("OCR error during extractTextFromImage:", error);
       const message =
