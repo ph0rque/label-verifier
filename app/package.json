@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postinstall": "mkdir -p public/tesseract && cp node_modules/tesseract.js-core/*.wasm public/tesseract/ 2>/dev/null || true",
     "start": "next start",
     "lint": "next lint",
     "test": "jest --coverage"

@@ -1,18 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ["tesseract.js", "tesseract.js-core"],
+    serverComponentsExternalPackages: ["sharp"],
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // Ensure tesseract packages are required at runtime, not bundled
-      config.externals = Array.isArray(config.externals)
-        ? [
-            ...config.externals,
-            { "tesseract.js": "commonjs tesseract.js" },
-            { "tesseract.js-core": "commonjs tesseract.js-core" },
-          ]
-        : config.externals;
+      // Allow Next.js to bundle tesseract.js (avoid externalization issues)
+      // Only externalize sharp for image processing
+      config.resolve = config.resolve || {};
+      config.resolve.fallback = config.resolve.fallback || {};
+      config.resolve.fallback.fs = false;
     }
     return config;
   },
