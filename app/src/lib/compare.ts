@@ -50,16 +50,43 @@ function fuzzyMatchByTokens(formValue: string, detectedText: string): string | n
   if (formTokens.length === 0 || detectedTokens.length === 0) return null;
 
   let matched = 0;
+  const usedDetectedIndices = new Set<number>();
+  
   for (const t of formTokens) {
     let best = 0;
-    for (const dt of detectedTokens) {
+    let bestIdx = -1;
+    for (let i = 0; i < detectedTokens.length; i++) {
+      const dt = detectedTokens[i];
       const score = similarityRatio(t, dt);
-      if (score > best) best = score;
+      if (score > best) {
+        best = score;
+        bestIdx = i;
+      }
       if (best >= 0.9) break; // early stop on strong match
     }
     const shortToken = t.length <= 3;
     const threshold = shortToken ? 0.66 : 0.75;
-    if (best >= threshold) matched++;
+    if (best >= threshold && bestIdx >= 0) {
+      matched++;
+      usedDetectedIndices.add(bestIdx);
+    } else {
+      // A form token failed to match - check if there's a contradictory token in detected text
+      // e.g., form says "BEER" but detected has "WHISKEY"
+      for (const dt of detectedTokens) {
+        if (dt.length >= 4 && similarityRatio(t, dt) < 0.3 && dt !== t.toUpperCase()) {
+          // There's a long token in detected that's very different from this form token
+          // This might be a contradiction (BEER vs WHISKEY)
+          // Only fail if both are likely "type" words (not common filler words)
+          const isLikelyTypeWord = (word: string) => {
+            const common = ["THE", "AND", "FROM", "WITH", "FOR", "THIS", "THAT", "YEAR", "AGED"];
+            return !common.includes(word) && word.length >= 4;
+          };
+          if (isLikelyTypeWord(t) && isLikelyTypeWord(dt)) {
+            return null; // Contradictory type tokens detected
+          }
+        }
+      }
+    }
   }
 
   const coverage = matched / formTokens.length;

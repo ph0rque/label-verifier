@@ -32,6 +32,15 @@ describe("compareStringField", () => {
     const result = compareStringField("brandName", "Old Tom Distillery", "Random Text");
     expect(result.status).toBe("not_found");
   });
+
+  it("returns not_found when key product type words differ (Beer vs Whiskey)", () => {
+    const result = compareStringField(
+      "productClassType",
+      "Kentucky Straight Bourbon Beer",
+      "Kentucky Straight Bourbon Whiskey 45% Alc/Vol 750 ML"
+    );
+    expect(result.status).toBe("not_found");
+  });
 });
 
 describe("compareAlcoholContent", () => {
