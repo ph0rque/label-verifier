@@ -80,19 +80,28 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
     const langPath = resolveLanguageDataPath();
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    const worker = await createWorker({
+    const workerOptions: Record<string, unknown> = {
       corePath,
       langPath,
       logger: () => {},
       cacheMethod: "none",
-      // Ensure wasm file resolves when using remote core script
-      locateFile: (file: string) => {
-        if (file.endsWith(".wasm") && corePath.startsWith("http")) {
+    };
+
+    if (corePath.startsWith("http")) {
+      workerOptions.cachePath = "";
+      workerOptions.cacheMethod = "fetch";
+      workerOptions.workerPath = `${REMOTE_CORE_BASE}/tesseract.worker.min.js`;
+      workerOptions.workerBlobURL = false;
+      workerOptions.langPath = REMOTE_CORE_BASE;
+      (workerOptions as { locateFile?: (path: string, prefix?: string) => string }).locateFile = (file) => {
+        if (file.endsWith(".wasm")) {
           return `${REMOTE_CORE_BASE}/${file}`;
         }
-        return file;
-      },
-    });
+        return `${REMOTE_CORE_BASE}/${file}`;
+      };
+    }
+
+    const worker = await createWorker(workerOptions as any);
     try {
       if (typeof worker.load === "function") {
         await worker.load();
@@ -134,3 +143,4 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
     try { fs.unlinkSync(tmpPath); } catch {}
   }
 }
+
