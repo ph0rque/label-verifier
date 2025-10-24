@@ -6,7 +6,7 @@ A full-stack TypeScript web application that simulates the TTB (Alcohol and Toba
 
 - **Form-based data collection**: Brand name, product class/type, alcohol content (ABV), net contents
 - **Image upload**: JPEG/PNG support with 10MB file size limit and preview
-- **AI-powered OCR**: Tesseract.js with image pre-processing (grayscale, normalization, sharpening, upscaling)
+- **AI-powered OCR**: Google Cloud Vision API (production) with Tesseract.js fallback and image pre-processing (grayscale, normalization, sharpening, upscaling)
 - **Intelligent comparison**: Fuzzy matching for brand/class, tolerance-based ABV matching, robust net contents detection, government warning phrase detection
 - **Clear results**: Color-coded status badges, detailed field-by-field verification, comprehensive error messages
 
@@ -14,7 +14,7 @@ A full-stack TypeScript web application that simulates the TTB (Alcohol and Toba
 
 - **Frontend**: Next.js 14 (App Router), React, TypeScript, Tailwind CSS
 - **Form Handling**: React Hook Form, Zod validation
-- **OCR**: Google Cloud Vision API (production), Tesseract.js 4.1.1 (local dev), Sharp (image preprocessing)
+- **OCR**: Google Cloud Vision API (production), Tesseract.js 4.1.4 (local dev), Sharp (image preprocessing)
 - **Testing**: Jest, Testing Library (27 tests passing)
 - **Deployment**: Vercel
 
@@ -45,7 +45,7 @@ The app will be available at [http://localhost:3000](http://localhost:3000).
 
 **For local development with Google Cloud Vision** (optional):
 
-Create `app/.env` file:
+Create `app/.env.local` file:
 ```bash
 GOOGLE_CLOUD_VISION_API_KEY=your_api_key_here
 ```
@@ -135,6 +135,7 @@ Vercel will automatically detect Next.js, install dependencies, and build the ap
 ### Build for Production Locally
 
 ```bash
+cd app
 npm run build
 npm start
 ```

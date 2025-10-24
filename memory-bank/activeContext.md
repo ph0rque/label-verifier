@@ -4,7 +4,7 @@
 - **Production deployment successful** with Google Cloud Vision API integration
 - All 27 tests passing after fixing product type contradiction detection bug
 - Documentation updated with deployment instructions and technical rationale
-- Ready for final submission pending deployed URL update in README
+- README and memory bank refreshed with latest OCR strategy wording; final verification sweep completed
 
 ## Recent Actions
 - **Oct 24, 2025**: Resolved Vercel OCR deployment challenges
@@ -14,6 +14,7 @@
   - Fixed fuzzy matching bug: "Kentucky Straight Bourbon Beer" vs "Whiskey" now correctly returns not_found
   - Added contradiction detection for product type tokens (Beer vs Whiskey, etc.)
   - Updated README with Google Cloud Vision setup instructions and rationale
+  - README wording refreshed to highlight production OCR shift and local fallback
   - All 27 tests passing with improved comparison logic
 
 - **Oct 23, 2025**: Major project reorganization
@@ -28,5 +29,5 @@
 - ✅ Google Cloud Vision API configured and tested on production
 - ✅ All smoke tests passing on deployed instance (perfect-match, mismatch scenarios, contradiction detection)
 - ✅ Documentation complete with deployment URL and setup instructions
-- **Ready for submission**
+- ✅ Final documentation verification complete; ready for submission
 

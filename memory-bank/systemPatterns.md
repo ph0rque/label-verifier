@@ -4,12 +4,12 @@
 - **Next.js App Router** single-page application with server-side API route (`/api/verify`)
 - Frontend: React components (Form, Results, LoadingIndicator) with React Hook Form and Zod validation
 - Backend: Next.js API route handles multipart form upload, OCR processing, comparison, and structured JSON response
-- OCR executes in serverless function with dual-mode support (child process for dev, in-process for Vercel)
+- OCR pipeline: Google Cloud Vision API in production (serverless-safe), local Tesseract.js worker during development
 - No database or session storage; stateless request/response pattern
 
 ## Integration Points
 - **Google Cloud Vision API**: Production OCR via ImageAnnotatorClient (text detection)
-- **Tesseract.js 4.1.1**: Local development OCR engine via child process worker
+- **Tesseract.js 4.1.4**: Local development OCR engine via child process worker (fallback when API key absent)
 - **Sharp**: Image preprocessing (grayscale, normalize, sharpen, upscale to 1200px)
 - **Vercel**: Serverless deployment platform with automatic Next.js detection
 - OCR worker script: External Node script (`scripts/ocr-worker.cjs`) for local Tesseract.js execution

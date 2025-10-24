@@ -40,9 +40,12 @@
   - Removed prepare:tesseract build step, tesseract-wasm, and canvas dependencies
   - Build successful locally; deployed to Vercel with API key environment variable configured
   - **Deployment successful**: Google Cloud Vision working perfectly on Vercel
-  - Fixed fuzzy matching bug: added contradiction detection for product type tokens (Beer vs Whiskey now correctly returns not_found)
-  - All 27 tests passing; coverage improved with new logic
-  - Updated README and memory bank documentation with Google Cloud Vision integration details
+- Fixed fuzzy matching bug: added contradiction detection for product type tokens (Beer vs Whiskey now correctly returns not_found)
+- All 27 tests passing; coverage improved with new logic
+- Updated README and memory bank documentation with Google Cloud Vision integration details
+- README updated again to emphasize Google Cloud Vision as production OCR with local fallback
+- Memory bank refreshed (activeContext, progress) to reflect final documentation sweep pending submission
+- README updated to reference `.env.local` and documented `cd app` step before production build/start commands
 
 ### Previous Unresolved Attempts (from earlier)
 - Tried forcing Tesseract to load wasm from CDN (`corePath`/`langPath`), but runtime still resolved `node_modules/tesseract.js-core/tesseract-core-simd.wasm` and failed.
