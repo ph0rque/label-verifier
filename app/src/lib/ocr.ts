@@ -50,8 +50,11 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
 
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    // Let tesseract.js use default CDN paths for core/wasm files
-    const { data } = await recognize(processedBuffer, "eng");
+    // Force CDN usage on Vercel to avoid local node_modules resolution issues
+    const { data } = await recognize(processedBuffer, "eng", {
+      langPath: "https://tessdata.projectnaptha.com/4.0.0",
+      corePath: "https://cdn.jsdelivr.net/npm/tesseract.js-core@4.0.4",
+    });
     return data?.text ?? "";
   }
 
