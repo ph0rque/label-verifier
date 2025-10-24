@@ -47,6 +47,6 @@
 28. [x] Configure Vercel deployment with environment variables and build settings
 29. [x] Write README with local development setup: npm install, npm run dev, .env.local instructions
 30. [x] Document deployment process and deployed app URL in README
-31. [x] Document technical decisions and assumptions (e.g., OCR tolerance, matching logic, Tesseract.js choice)
-32. [ ] Final smoke test on deployed Vercel instance: submit form, verify OCR, check results
-33. [ ] Code cleanup, console error checks, performance optimization, final visual pass
+31. [x] Document technical decisions and assumptions (e.g., OCR tolerance, matching logic, Google Cloud Vision choice)
+32. [x] Final smoke test on deployed Vercel instance: submit form, verify OCR, check results
+33. [x] Code cleanup, console error checks, performance optimization, final visual pass

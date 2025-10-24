@@ -103,7 +103,7 @@ Use the provided test images in `test-images/`:
 
 ### Live Demo
 
-🔗 **[View Deployed App on Vercel](https://label-verifier.vercel.app)** *(Update this URL after deployment)*
+🔗 **[View Deployed App on Vercel](https://label-verifier.vercel.app)**
 
 ### Deploy Your Own Instance
 
