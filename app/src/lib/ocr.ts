@@ -4,14 +4,6 @@ import { spawn } from "child_process";
 
 const OCR_ERROR_TOKEN = "OCR_EXTRACT_FAILED";
 const REMOTE_CORE_BASE = "https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0";
-const LOCAL_WORKER_PATH = (() => {
-  try {
-    return require.resolve("tesseract.js/dist/worker.min.js");
-  } catch (error) {
-    console.warn("Unable to resolve local tesseract worker script", error);
-    return null;
-  }
-})();
 
 export async function extractTextFromImage(file: File): Promise<string> {
   try {
@@ -51,7 +43,7 @@ function resolveLanguageDataPath(): string {
   return hasLocalData ? cwd : "https://tessdata.projectnaptha.com/4.0.0";
 }
 
-function resolveCoreScriptPath(): string | null {
+function resolveCoreScriptPath(): string {
   if (process.env.TESSERACT_LOCAL_CORE === "1") {
     try {
       return require.resolve("tesseract.js-core/tesseract-core.wasm.js");
@@ -61,7 +53,7 @@ function resolveCoreScriptPath(): string | null {
   }
 
   if (process.env.VERCEL === "1" || process.env.USE_REMOTE_TESSERACT === "true") {
-    return null;
+    return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
   }
 
   try {
@@ -71,7 +63,7 @@ function resolveCoreScriptPath(): string | null {
       return require.resolve("tesseract.js-core/tesseract-core.wasm.js");
     } catch (fallbackError) {
       console.warn("Failed to resolve local tesseract core script", error, fallbackError);
-      return null;
+      return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
     }
   }
 }
@@ -81,61 +73,39 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
   const preferInProcess = process.env.VERCEL === "1" || process.env.DISABLE_CHILD_OCR === "true";
   if (preferInProcess) {
     const tesseractModule = await import("tesseract.js");
-    const createWorker =
-      (tesseractModule as { createWorker?: typeof import("tesseract.js").createWorker }).createWorker ??
-      (tesseractModule as { default?: { createWorker?: typeof import("tesseract.js").createWorker } }).default
-        ?.createWorker;
+    const recognize =
+      (tesseractModule as { recognize?: typeof import("tesseract.js").recognize }).recognize ??
+      (tesseractModule as { default?: { recognize?: typeof import("tesseract.js").recognize } }).default
+        ?.recognize;
     const PSM =
       (tesseractModule as { PSM?: typeof import("tesseract.js").PSM }).PSM ??
       (tesseractModule as { default?: { PSM?: typeof import("tesseract.js").PSM } }).default?.PSM;
 
-    if (!createWorker) {
-      throw new Error("Tesseract createWorker is unavailable in the current environment");
+    if (!recognize) {
+      throw new Error("Tesseract recognize is unavailable in the current environment");
     }
+
     const corePath = resolveCoreScriptPath();
     const langPath = resolveLanguageDataPath();
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    const workerOptions: Record<string, unknown> = {
-      logger: () => {},
-      cacheMethod: "none",
+    const options: Record<string, unknown> = {
+      corePath,
+      langPath,
+      cacheMethod: corePath.startsWith("http") ? "fetch" : "none",
     };
 
-    const effectiveWorkerPath = LOCAL_WORKER_PATH ?? require.resolve("tesseract.js/dist/worker.min.js");
-    workerOptions.workerPath = effectiveWorkerPath;
-    workerOptions.langPath = langPath;
-
-    if (!corePath) {
-      // Remote execution: rely on worker script to fetch core from CDN
-      workerOptions.cachePath = "";
-      workerOptions.cacheMethod = "fetch";
-      workerOptions.workerBlobURL = false;
-      workerOptions.corePath = REMOTE_CORE_BASE;
-    } else {
-      workerOptions.corePath = corePath;
+    if (corePath.startsWith("http")) {
+      options.workerBlobURL = false;
     }
 
-    const worker = await createWorker(workerOptions as any);
-    try {
-      if (typeof worker.load === "function") {
-        await worker.load();
-      }
-      await worker.loadLanguage("eng");
-      await worker.initialize("eng");
-      if (typeof worker.setParameters === "function" && PSM?.SINGLE_BLOCK !== undefined) {
-        await worker.setParameters({
-          tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-          preserve_interword_spaces: "1",
-          user_defined_dpi: "300",
-        });
-      }
-      const { data } = await worker.recognize(processedBuffer);
-      return data?.text ?? "";
-    } finally {
-      if (typeof worker.terminate === "function") {
-        await worker.terminate();
-      }
+    const { data } = await recognize(processedBuffer, "eng", options);
+
+    if (PSM?.SINGLE_BLOCK !== undefined && data?.confidence !== undefined) {
+      // No direct setParameters when using recognize; rely on preprocessing.
     }
+
+    return data?.text ?? "";
   }
 
   // Default: Run OCR via external Node worker script to avoid Next.js bundler worker path issues in dev
