@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run prepare:tesseract && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "jest --coverage",
-    "prepare:tesseract": "node scripts/prepare-tesseract-assets.cjs"
+    "test": "jest --coverage"
   },
   "dependencies": {
+    "@google-cloud/vision": "^5.3.4",
     "@hookform/resolvers": "^3.9.0",
     "next": "^14.2.33",
     "node-fetch": "^2.7.0",
@@ -30,6 +30,7 @@
     "@testing-library/user-event": "^14.5.2",
     "@types/jest": "^29.5.12",
     "@types/node": "20.12.12",
+    "@types/node-fetch": "^2.6.13",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "autoprefixer": "^10.4.21",

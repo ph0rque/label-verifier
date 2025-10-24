@@ -47,6 +47,28 @@ function main() {
   if (fs.existsSync(langSource)) {
     copyFileAsset(langSource, path.join(runtimeDir, 'eng.traineddata'));
   }
+
+  const wasmRuntimeDir = path.join(projectRoot, ".tesseract-wasm-runtime");
+  fs.rmSync(wasmRuntimeDir, { recursive: true, force: true });
+  ensureDir(wasmRuntimeDir);
+
+  const wasmAssetsDir = path.join(projectRoot, "node_modules", "tesseract-wasm", "dist");
+  const wasmAssets = [
+    ["tesseract-core.wasm", "tesseract-core.wasm"],
+    ["tesseract-core-fallback.wasm", "tesseract-core-fallback.wasm"],
+    ["tesseract-worker.js", "tesseract-worker.js"],
+  ];
+
+  wasmAssets.forEach(([file, dest]) => {
+    copyFileAsset(path.join(wasmAssetsDir, file), path.join(wasmRuntimeDir, dest));
+  });
+
+  const wasmLangDir = path.join(wasmRuntimeDir, "lang");
+  ensureDir(wasmLangDir);
+  const legacyLangSource = path.join(projectRoot, 'eng.traineddata');
+  if (fs.existsSync(legacyLangSource)) {
+    copyFileAsset(legacyLangSource, path.join(wasmLangDir, "eng.traineddata"));
+  }
 }
 
 main();

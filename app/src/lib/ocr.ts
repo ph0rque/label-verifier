@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { spawn } from "child_process";
+import { extractTextWithCloudVision } from "./ocr-cloud";
 
 const OCR_ERROR_TOKEN = "OCR_EXTRACT_FAILED";
 
@@ -38,6 +39,17 @@ export async function extractTextFromBuffer(
   imageBuffer: Buffer,
   coreBaseUrl?: string,
 ): Promise<string> {
+  // Use Google Cloud Vision if API key is available
+  const hasCloudVisionKey = !!process.env.GOOGLE_CLOUD_VISION_API_KEY;
+  if (hasCloudVisionKey) {
+    try {
+      return await extractTextWithCloudVision(imageBuffer);
+    } catch (error) {
+      console.error("Cloud Vision OCR failed, falling back to local Tesseract", error);
+      // Fall through to local Tesseract
+    }
+  }
+
   const isVercel = process.env.VERCEL === "1";
   const preferInProcess = isVercel || process.env.DISABLE_CHILD_OCR === "true";
 

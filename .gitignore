@@ -44,4 +44,5 @@ test-results/
 dist/
 build/
 .tesseract-runtime/
+.tesseract-wasm-runtime/
 

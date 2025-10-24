@@ -30,7 +30,15 @@
 - **Next Plan**: Vendor the node worker script directory (`src/worker-script/node/**`) into `.tesseract-runtime` and reference it via absolute path string to avoid module id rewriting.
 - Implemented asset vendoring and updated worker path logic; deployment now fails due to missing `node-fetch` module required by node worker script.
 - **Next Plan**: Provide `node-fetch` CommonJS polyfill (install dependency or shim) so node worker script can import it under Vercel; continue with in-process node worker approach before considering tesseract-wasm swap.
-- Awaiting deployment results for native node worker script approach.
+- Installed node-fetch but deployment continued failing with module resolution errors.
+- Explored tesseract-wasm as alternative but encountered ESM/TypeScript compatibility issues and ImageData polyfill requirements for Node.
+- **Final Solution**: Integrated Google Cloud Vision API for Vercel deployment.
+  - Installed @google-cloud/vision package
+  - Created ocr-cloud.ts module using ImageAnnotatorClient for text detection
+  - Modified ocr.ts to check for GOOGLE_CLOUD_VISION_API_KEY and use Cloud Vision when available, fallback to local Tesseract.js for development
+  - Simplified vercel.json (removed all includeFiles bundling complexity)
+  - Removed prepare:tesseract build step, tesseract-wasm, and canvas dependencies
+  - Build successful locally; awaiting Vercel deployment with API key environment variable configured
 
 ### Previous Unresolved Attempts (from earlier)
 - Tried forcing Tesseract to load wasm from CDN (`corePath`/`langPath`), but runtime still resolved `node_modules/tesseract.js-core/tesseract-core-simd.wasm` and failed.

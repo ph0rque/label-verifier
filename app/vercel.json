@@ -8,7 +8,6 @@
   },
   "functions": {
     "src/app/api/verify/route.ts": {
-      "includeFiles": "{.tesseract-runtime/**}",
       "maxDuration": 60,
       "memory": 1024
     }
