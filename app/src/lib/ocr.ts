@@ -57,6 +57,8 @@ export async function extractTextFromBuffer(
     const { data } = await recognize(processedBuffer, "eng", {
       langPath: "https://tessdata.projectnaptha.com/4.0.0",
       corePath: `${baseUrl}/tesseract`,
+      workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/worker.min.js",
+      workerBlobURL: false,
     });
     return data?.text ?? "";
   }
