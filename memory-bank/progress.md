@@ -24,7 +24,9 @@
 - Implemented asset vendoring: added prepare script to copy worker/wasm/lang into .tesseract-runtime, updated ocr.ts to load from vendored paths on Vercel, and updated vercel.json to include the new directory.
 - Deployment failed: Worker still resolving to /var/task/app/node_modules/...; vendored directory not being located under current working directory inside lambda.
 - Adjusted ocr.ts to search multiple potential runtime directories (../.tesseract-runtime, ../../.tesseract-runtime, ../static/.tesseract-runtime) before falling back to local node_modules.
-- Awaiting deployment results for expanded runtime directory search.
+- Deployment failed: Worker execution threw TypeError addEventListener is not a function (browser worker bundle incompatible with Node worker_threads).
+- Updated ocr.ts to use tesseract.js native node worker script via require.resolve("tesseract.js/src/worker-script/node/index.js") when on Vercel, with gzip disabled.
+- Awaiting deployment results for native node worker script approach.
 
 ### Previous Unresolved Attempts (from earlier)
 - Tried forcing Tesseract to load wasm from CDN (`corePath`/`langPath`), but runtime still resolved `node_modules/tesseract.js-core/tesseract-core-simd.wasm` and failed.
