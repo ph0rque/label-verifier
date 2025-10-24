@@ -42,3 +42,13 @@
   - Added explicit comprehensive discrepancy reporting requirement.
 - Committed and pushed initial documentation to repository.
 
+## 2025-10-24
+
+### Vercel OCR Troubleshooting (Unresolved Attempts)
+- Tried forcing Tesseract to load wasm from CDN (`corePath`/`langPath`), but runtime still resolved `node_modules/tesseract.js-core/tesseract-core-simd.wasm` and failed.
+- Removed `tesseract.js-core` from runtime dependencies (dev-only) to avoid local resolution; error persisted.
+- Added `includeFiles` in `vercel.json` to bundle wasm assets with the serverless function; Vercel still could not locate them at runtime.
+- Copied all `tesseract-core*.wasm` assets into `public/tesseract` and pointed `corePath` at that directory. Fallback to `VERCEL_URL` broke because the env var is not set inside production functions.
+- Adjusted webpack externals (bundled vs. externalized `tesseract.js`/`tesseract.js-core`); none prevented Tesseract from resolving to the missing path.
+- Without further changes, next step is to try CDN-hosted worker script and host-aware `corePath` using request headers.
+
