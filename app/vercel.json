@@ -8,8 +8,13 @@
   },
   "functions": {
     "src/app/api/verify/route.ts": {
-      "maxDuration": 30,
-      "includeFiles": "node_modules/tesseract.js-core/**/*.wasm"
+      "includeFiles": [
+        "scripts/ocr-worker.cjs",
+        "eng.traineddata",
+        "node_modules/tesseract.js-core/**"
+      ],
+      "maxDuration": 60,
+      "memory": 1024
     }
   }
 }

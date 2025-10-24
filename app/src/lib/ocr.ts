@@ -39,7 +39,7 @@ export async function extractTextFromBuffer(
   coreBaseUrl?: string,
 ): Promise<string> {
   // Prefer in-process recognize on platforms where child_process isn't allowed (e.g., Vercel)
-  const preferInProcess = process.env.VERCEL === "1" || process.env.DISABLE_CHILD_OCR === "true";
+  const preferInProcess = process.env.DISABLE_CHILD_OCR === "true";
   if (preferInProcess) {
     const tesseractModule = await import("tesseract.js");
     const recognize =
@@ -53,11 +53,10 @@ export async function extractTextFromBuffer(
 
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    const baseUrl = coreBaseUrl ?? "http://localhost:3000";
     const { data } = await recognize(processedBuffer, "eng", {
-      langPath: "https://tessdata.projectnaptha.com/4.0.0",
-      corePath: `${baseUrl}/tesseract`,
-      workerPath: "https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/worker.min.js",
+      langPath: path.join(process.cwd(), "eng.traineddata"),
+      corePath: require.resolve("tesseract.js-core/tesseract-core.wasm.js"),
+      workerPath: require.resolve("tesseract.js/dist/worker.min.js"),
       workerBlobURL: false,
     });
     return data?.text ?? "";
@@ -65,7 +64,7 @@ export async function extractTextFromBuffer(
 
   // Default: Run OCR via external Node worker script to avoid Next.js bundler worker path issues in dev
   const tmpPath = path.join(process.cwd(), `.tmp-ocr-${Date.now()}.bin`);
-  fs.writeFileSync(tmpPath, imageBuffer);
+  fs.writeFileSync(tmpPath, imageBuffer as Uint8Array);
   try {
     const scriptPath = path.join(process.cwd(), "scripts", "ocr-worker.cjs");
     const child = spawn(process.execPath, [scriptPath, tmpPath], { stdio: ["ignore", "pipe", "pipe"] });
@@ -75,9 +74,9 @@ export async function extractTextFromBuffer(
     child.stderr.on("data", (d) => stderr.push(d));
     const exitCode: number = await new Promise((resolve) => child.on("close", resolve));
     if (exitCode !== 0) {
-      throw new Error(`OCR child failed: ${Buffer.concat(stderr).toString()}`);
+      throw new Error(`OCR child failed: ${Buffer.concat(stderr as unknown as Uint8Array[]).toString()}`);
     }
-    return Buffer.concat(stdout).toString();
+    return Buffer.concat(stdout as unknown as Uint8Array[]).toString();
   } finally {
     try { fs.unlinkSync(tmpPath); } catch {}
   }
