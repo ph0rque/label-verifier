@@ -3,6 +3,7 @@ import fs from "fs";
 import { spawn } from "child_process";
 
 const OCR_ERROR_TOKEN = "OCR_EXTRACT_FAILED";
+const REMOTE_CORE_BASE = "https://cdn.jsdelivr.net/npm/tesseract.js-core@6.0.0";
 
 export async function extractTextFromImage(file: File): Promise<string> {
   try {
@@ -42,6 +43,23 @@ function resolveLanguageDataPath(): string {
   return hasLocalData ? cwd : "https://tessdata.projectnaptha.com/4.0.0";
 }
 
+function resolveCoreScriptPath(): string {
+  if (process.env.VERCEL === "1" || process.env.USE_REMOTE_TESSERACT === "true") {
+    return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
+  }
+
+  try {
+    return require.resolve("tesseract.js-core/tesseract-core-simd.wasm.js");
+  } catch (error) {
+    try {
+      return require.resolve("tesseract.js-core/tesseract-core.wasm.js");
+    } catch (fallbackError) {
+      console.warn("Failed to resolve local tesseract core script", error, fallbackError);
+      return `${REMOTE_CORE_BASE}/tesseract-core-simd.wasm.js`;
+    }
+  }
+}
+
 export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string> {
   // Prefer in-process recognize on platforms where child_process isn't allowed (e.g., Vercel)
   const preferInProcess = process.env.VERCEL === "1" || process.env.DISABLE_CHILD_OCR === "true";
@@ -58,11 +76,23 @@ export async function extractTextFromBuffer(imageBuffer: Buffer): Promise<string
     if (!createWorker) {
       throw new Error("Tesseract createWorker is unavailable in the current environment");
     }
-    const corePath = require.resolve("tesseract.js-core/tesseract-core.wasm.js");
+    const corePath = resolveCoreScriptPath();
     const langPath = resolveLanguageDataPath();
     const processedBuffer = await preprocessImage(imageBuffer);
 
-    const worker = await createWorker({ corePath, langPath, logger: () => {} });
+    const worker = await createWorker({
+      corePath,
+      langPath,
+      logger: () => {},
+      cacheMethod: "none",
+      // Ensure wasm file resolves when using remote core script
+      locateFile: (file: string) => {
+        if (file.endsWith(".wasm") && corePath.startsWith("http")) {
+          return `${REMOTE_CORE_BASE}/${file}`;
+        }
+        return file;
+      },
+    });
     try {
       if (typeof worker.load === "function") {
         await worker.load();
