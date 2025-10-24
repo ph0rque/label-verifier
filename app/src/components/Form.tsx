@@ -21,7 +21,6 @@ const DEFAULT_VALUES: LabelFormInput = {
   alcoholContent: "",
   netContents: "",
   bottlerNameAddress: "",
-  governmentWarningAcknowledged: false,
 };
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -164,17 +163,6 @@ export function LabelVerificationForm({ onSubmit, onReset }: FormProps) {
               {errors.bottlerNameAddress.message}
             </span>
           )}
-        </label>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            {...register("governmentWarningAcknowledged")}
-            className="h-4 w-4 rounded border border-zinc-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          />
-          <span className="text-sm">
-            Government warning text expected on label (optional tracking)
-          </span>
         </label>
       </div>
 

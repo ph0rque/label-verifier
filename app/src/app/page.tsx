@@ -25,12 +25,6 @@ export default function Home() {
       if (values.bottlerNameAddress) {
         formData.append("bottlerNameAddress", values.bottlerNameAddress);
       }
-      if (typeof values.governmentWarningAcknowledged !== "undefined") {
-        formData.append(
-          "governmentWarningAcknowledged",
-          values.governmentWarningAcknowledged ? "true" : "false",
-        );
-      }
       formData.append("labelImage", values.imageFile);
 
       const response = await fetch("/api/verify", {

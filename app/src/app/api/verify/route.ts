@@ -166,10 +166,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Verification API error", error);
-    return NextResponse.json(
-      { error: "Unexpected error during verification" },
-      { status: 500 },
-    );
+    console.error("Verification API error:", error);
+
+    let message = "An unexpected error occurred during verification.";
+    if (error instanceof Error) {
+      // Provide more specific feedback for known error types
+      if (error.name === "TypeError") {
+        message =
+          "Failed to process the request. Please check the form data and try again.";
+      } else if (error.message.includes("Cloud Vision")) {
+        message =
+          "The OCR service is currently unavailable. Please try again later.";
+      }
+    }
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

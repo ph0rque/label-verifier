@@ -27,16 +27,12 @@ export const labelFormSchema = z.object({
     }),
   netContents: z
     .string()
-    .trim()
-    .refine((val) => NET_CONTENTS_REGEX.test(val), {
-      message: "Enter net contents with unit (e.g., 750 mL, 12 fl oz)",
-    }),
-  bottlerNameAddress: z
-    .string()
-    .trim()
-    .optional()
-    .or(z.literal("")),
-  governmentWarningAcknowledged: z.boolean().optional(),
+    .min(1, "Net contents is required")
+    .regex(
+      /^(\d+)\s?(mL|L|fl\s?oz|oz)$/i,
+      "Enter a valid volume (e.g., 750 mL)",
+    ),
+  bottlerNameAddress: z.string().optional(),
 });
 
 export type LabelFormInput = z.infer<typeof labelFormSchema>;

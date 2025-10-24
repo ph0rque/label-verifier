@@ -18,6 +18,18 @@ A full-stack TypeScript web application that simulates the TTB (Alcohol and Toba
 - **Testing**: Jest, Testing Library (27 tests passing)
 - **Deployment**: Vercel
 
+## Bonus Features Implemented
+
+This project goes beyond the core requirements by implementing several bonus features to improve robustness, accuracy, and user experience:
+
+-   **Advanced OCR Comparison Logic**: Implemented sophisticated, resilient matching algorithms:
+    -   **Fuzzy Matching**: Uses Levenshtein distance to tolerate minor OCR typos in brand and product names (e.g., "Distilery" vs "Distillery").
+    -   **Numerical Tolerance**: Allows for slight variations in alcohol content (±0.5%) and net contents to account for OCR inaccuracies.
+    -   **Contradiction Detection**: Prevents incorrect matches by identifying contradictory terms (e.g., "Beer" vs. "Whiskey").
+-   **Comprehensive Automated Test Suite**: Includes 27 unit and integration tests using Jest and Testing Library, ensuring the reliability of the core business logic.
+-   **Polished User Experience**: The UI is designed as a responsive single-page application with asynchronous submission, loading indicators, and detailed, real-time validation feedback.
+-   **Robust Hybrid OCR Strategy**: Combines the power of Google Cloud Vision for reliable production performance with a free, local Tesseract.js fallback for cost-effective development.
+
 ## Local Development Setup
 
 ### Prerequisites
