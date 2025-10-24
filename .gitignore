@@ -40,6 +40,14 @@ Desktop.ini
 # Test results
 test-results/
 
+# Environment variables
+.env
+.env.local
+.env*.local
+app/.env
+app/.env.local
+app/.env*.local
+
 # Build artifacts
 dist/
 build/
