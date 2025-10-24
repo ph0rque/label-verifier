@@ -28,6 +28,8 @@
 - Updated ocr.ts to use tesseract.js native node worker script via require.resolve("tesseract.js/src/worker-script/node/index.js") when on Vercel, with gzip disabled.
 - Deployment failed: Worker constructor received numeric module id (ERR_INVALID_ARG_TYPE), indicating module path bundling via Next/webpack (`require.resolve` replaced with chunk id).
 - **Next Plan**: Vendor the node worker script directory (`src/worker-script/node/**`) into `.tesseract-runtime` and reference it via absolute path string to avoid module id rewriting.
+- Implemented asset vendoring and updated worker path logic; deployment now fails due to missing `node-fetch` module required by node worker script.
+- **Next Plan**: Provide `node-fetch` CommonJS polyfill (install dependency or shim) so node worker script can import it under Vercel; continue with in-process node worker approach before considering tesseract-wasm swap.
 - Awaiting deployment results for native node worker script approach.
 
 ### Previous Unresolved Attempts (from earlier)
